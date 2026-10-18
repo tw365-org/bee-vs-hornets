@@ -85,6 +85,12 @@ export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
     return false;
   }
 
+  /**
+   * 女王蜂被擊殺時調用：
+   * 1. 播放震撼重低音爆炸音效
+   * 2. 觸發 GameScene.onQueenDefeated 結算高額積分 (+2500)、回復玩家 HP (+40) 與獎勵核彈 (+1)
+   * 3. 徹底銷毀實體釋放物理與渲染節點
+   */
   die() {
     soundManager.playExplosion(true);
     this.scene.onQueenDefeated(this);

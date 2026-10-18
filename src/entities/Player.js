@@ -8,6 +8,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setCollideWorldBounds(true);
+    // 物理引擎核心防空區約束：上方不超過 220px，下方不超過 585px (避免遮蓋 614px 血條 HUD)
+    this.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 220, 480, 365));
     this.setSize(24, 24);
     this.setOffset(4, 4);
 
