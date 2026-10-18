@@ -166,7 +166,10 @@ export class GameScene extends Phaser.Scene {
   handleBulletHitEnemy(bullet, enemy) {
     if (!bullet.active || !enemy.active) return;
 
-    if (!bullet.piercing) {
+    if (bullet.piercing) {
+      if (bullet.hitTargets.has(enemy)) return;
+      bullet.hitTargets.add(enemy);
+    } else {
       bullet.setActive(false);
       bullet.setVisible(false);
       bullet.body.stop();
@@ -266,6 +269,9 @@ export class GameScene extends Phaser.Scene {
       if (enemy.active) {
         if (enemy === this.currentBoss) {
           enemy.takeDamage(200);
+          if (this.bossActive && this.currentBoss) {
+            this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
+          }
         } else {
           enemy.takeDamage(120);
         }
@@ -276,7 +282,12 @@ export class GameScene extends Phaser.Scene {
   showHitFlash(sprite) {
     sprite.setTint(0xffffff);
     this.time.delayedCall(60, () => {
-      if (sprite.active) sprite.clearTint();
+      if (!sprite.active) return;
+      if (sprite.isEnraged) {
+        sprite.setTint(0xff3333);
+      } else {
+        sprite.clearTint();
+      }
     });
   }
 

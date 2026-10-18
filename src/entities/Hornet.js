@@ -83,10 +83,8 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
   }
 
   die() {
-    this.setActive(false);
-    this.setVisible(false);
-    this.body.stop();
     soundManager.playExplosion(false);
     this.scene.onEnemyKilled(this);
+    this.destroy();
   }
 }

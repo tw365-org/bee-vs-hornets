@@ -86,10 +86,8 @@ export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
   }
 
   die() {
-    this.setActive(false);
-    this.setVisible(false);
-    this.body.stop();
     soundManager.playExplosion(true);
     this.scene.onQueenDefeated(this);
+    this.destroy();
   }
 }

@@ -54,7 +54,6 @@ export const GAME_CONFIG = {
       damage: 90,
       speed: 420,
       piercing: true,
-      splashRadius: 75,
       color: 0xff00ff,
     }
   },

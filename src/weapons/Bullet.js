@@ -9,6 +9,7 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     this.isMissile = false;
     this.target = null;
     this.speed = 600;
+    this.hitTargets = new Set();
   }
 
   fire(x, y, vx, vy, damage = 15, piercing = false, isMissile = false, target = null) {
@@ -19,6 +20,7 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     this.isMissile = isMissile;
     this.target = target;
     this.speed = Math.sqrt(vx * vx + vy * vy) || 500;
+    this.hitTargets.clear();
 
     if (isMissile) {
       this.setRotation(Math.atan2(vy, vx) + Math.PI / 2);
