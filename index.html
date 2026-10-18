@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小蜜蜂大戰虎頭蜂 (Bee vs Hornets) - 街機像素彈幕</title>
+  <meta name="description" content="使用 Phaser 3 與原生 ES Modules 打造的經典街機像素彈幕遊戲，具備 4 階重武器系統與花粉核爆必殺技。">
+  
+  <!-- Arcade Retro Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <!-- Arcade & CRT Styles -->
+  <link rel="stylesheet" href="./css/style.css">
+
+  <!-- Phaser 3 Official CDN (3.80.1) -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+</head>
+<body>
+  <div id="arcade-cabinet">
+    <div id="cabinet-header">
+      <span>★ ARCADE 1981 SPEC ★</span>
+      <span class="marquee-badge">HEAVY WEAPON SYSTEM</span>
+      <span>CREDIT: 99</span>
+    </div>
+
+    <div id="game-wrapper">
+      <div id="game-container"></div>
+      <div id="crt-overlay"></div>
+    </div>
+
+    <div id="cabinet-footer">
+      <div class="controls-hint">
+        <span>MOVE: <span class="key-tag">← → / A D</span></span>
+        <span>FIRE: <span class="key-tag">SPACE</span></span>
+        <span>BOMB: <span class="key-tag">X / B</span></span>
+      </div>
+      <div>1 COIN 1 PLAY</div>
+    </div>
+  </div>
+
+  <!-- Entry Point (Native ES Module) -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
