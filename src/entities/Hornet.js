@@ -177,6 +177,9 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
   }
 
   takeDamage(amount) {
+    // D4 規格最後防線：進場中 (ENTERING) 的工蜂完全免疫傷害
+    if (this.state === 'ENTERING') return false;
+
     this.hp -= amount;
     this.scene.showHitFlash(this);
     if (this.hp <= 0) {

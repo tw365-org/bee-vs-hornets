@@ -5,6 +5,8 @@ import { ArmoredHornet } from '../entities/ArmoredHornet.js';
 import { QueenBoss } from '../entities/QueenBoss.js';
 import { WeaponSystem } from '../weapons/WeaponSystem.js';
 import { WaveDifficultyManager } from '../systems/WaveDifficultyManager.js';
+import { detonatePollen, buzzardStrike } from '../logic/abilities.js';
+import { createOnceHitTracker } from '../logic/onceHitTracker.js';
 import { HUD } from '../ui/HUD.js';
 import { soundManager } from '../audio/SoundManager.js';
 
@@ -225,6 +227,9 @@ export class GameScene extends Phaser.Scene {
   handleBulletHitEnemy(bullet, enemy) {
     if (!bullet.active || !enemy.active) return;
 
+    // D4 & D5 規格守門：進場中 (ENTERING) 的工蜂免疫傷害，且子彈直接穿過不被消耗
+    if (enemy.state === 'ENTERING') return;
+
     if (bullet.piercing) {
       if (bullet.hitTargets.has(enemy)) return;
       bullet.hitTargets.add(enemy);
@@ -246,6 +251,10 @@ export class GameScene extends Phaser.Scene {
   // 玩家撞擊敵機
   handlePlayerHitEnemy(player, enemy) {
     if (!player.active || !enemy.active || player.isInvulnerable) return;
+
+    // D4 規格守門：進場中 (ENTERING) 的工蜂不產生撞擊傷害，雙方皆不受傷
+    if (enemy.state === 'ENTERING') return;
+
     player.takeDamage(25);
     enemy.takeDamage(40);
   }
@@ -322,16 +331,15 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 重創或秒殺場上所有普通敵蜂（使用 slice() 快照，避免迭代中 destroy 導致 splice 漏殺）
-    this.enemyGroup.getChildren().slice().forEach(enemy => {
-      if (enemy.active) {
-        if (enemy === this.currentBoss) {
-          enemy.takeDamage(200);
-          if (this.bossActive && this.currentBoss) {
-            this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
-          }
-        } else {
-          enemy.takeDamage(120);
+    // 重創或秒殺場上所有合格敵蜂（委託純邏輯 detonatePollen，遵守 D4 ENTERING 免疫守門）
+    detonatePollen(this.enemyGroup.getChildren(), {
+      minionDamage: GAME_CONFIG.POLLEN?.MINION_DAMAGE || 120,
+      bossDamage: GAME_CONFIG.POLLEN?.BOSS_DAMAGE || 200,
+      isBoss: enemy => enemy === this.currentBoss,
+      onDamaged: (enemy, dmg) => {
+        enemy.takeDamage(dmg);
+        if (this.bossActive && enemy === this.currentBoss) {
+          this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
         }
       }
     });
@@ -387,10 +395,8 @@ export class GameScene extends Phaser.Scene {
     const buzzard = this.physics.add.sprite(520, -60, 'easter_honey_buzzard').setDepth(250);
     buzzard.setScale(1.4);
 
-    // 蜂鷹單次傷害守門集合 (防止 Tween onUpdate 逐幀扣血導致 Boss 秒殺且受 FPS 影響)
-    const buzzardHitTargets = new Set();
-    const bossDmg = GAME_CONFIG.EASTER?.BOSS_DAMAGE || 250;
-    const minionDmg = GAME_CONFIG.EASTER?.MINION_DAMAGE || 150;
+    // 蜂鷹單次命中追蹤器（由 createOnceHitTracker 實例化，取代裸 Set）
+    const buzzardTracker = createOnceHitTracker();
 
     // 蜂鷹俯衝掠食軌跡動畫
     this.tweens.add({
@@ -403,17 +409,18 @@ export class GameScene extends Phaser.Scene {
         // 蜂鷹飛行時在身後留下一串金色微風火花
         this.sparkParticles.emitParticleAt(buzzard.x, buzzard.y - 15, 2);
 
-        // 掠過途徑肅清普通虎頭蜂並重創 Boss (以快照迭代 + 單次判定)
-        this.enemyGroup.getChildren().slice().forEach(enemy => {
-          if (enemy.active && !buzzardHitTargets.has(enemy) && Phaser.Math.Distance.Between(buzzard.x, buzzard.y, enemy.x, enemy.y) < 95) {
-            buzzardHitTargets.add(enemy);
-            if (enemy === this.currentBoss) {
-              enemy.takeDamage(bossDmg); // 對 Boss 造成配置重創傷害
-              if (this.bossActive && this.currentBoss) {
-                this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
-              }
-            } else {
-              enemy.takeDamage(minionDmg); // 秒殺普通或裝甲蜂
+        // 掠過途徑肅清普通虎頭蜂並重創 Boss (委託純邏輯 buzzardStrike，遵守 D4 免疫與 range)
+        buzzardStrike(this.enemyGroup.getChildren(), buzzard, {
+          tracker: buzzardTracker,
+          range: GAME_CONFIG.EASTER?.RANGE || 95,
+          bossDamage: GAME_CONFIG.EASTER?.BOSS_DAMAGE || 250,
+          minionDamage: GAME_CONFIG.EASTER?.MINION_DAMAGE || 150,
+          isBoss: enemy => enemy === this.currentBoss,
+          distanceFn: (x1, y1, x2, y2) => Phaser.Math.Distance.Between(x1, y1, x2, y2),
+          onDamaged: (enemy, dmg) => {
+            enemy.takeDamage(dmg);
+            if (this.bossActive && enemy === this.currentBoss) {
+              this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
             }
           }
         });

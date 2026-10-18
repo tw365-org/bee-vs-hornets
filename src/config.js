@@ -77,10 +77,17 @@ export const GAME_CONFIG = {
     }
   },
 
+  // 花粉天譴核爆參數
+  POLLEN: {
+    MINION_DAMAGE: 120,  // 對工蜂與裝甲蜂造成全屏肅清傷害
+    BOSS_DAMAGE: 200,    // 對女王 Boss 造成核爆重創傷害
+  },
+
   // 大自然食物鏈彩蛋：東方蜂鷹天敵援助參數
   EASTER: {
     BOSS_DAMAGE: 250,    // 蜂鷹掠過對女王 Boss 造成的重創傷害
     MINION_DAMAGE: 150,  // 蜂鷹掠過對普通工蜂/裝甲蜂造成的秒殺傷害
+    RANGE: 95,           // 蜂鷹掠食判定範圍半徑 (像素)
     COOLDOWN: 45000,     // 援助觸發冷卻時間 (毫秒)
   }
 };

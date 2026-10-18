@@ -24,13 +24,19 @@ const phaserConfig = {
   scene: [BootScene, MenuScene, GameScene, GameOverScene]
 };
 
-// 等待 Web Fonts 載入就緒後再啟動 Phaser，防止以 fallback 字型繪製被快取
+// 明確載入 Web Fonts 並提供 3 秒逾時保護，防止以 fallback 字型繪製被快取 (T12)
 window.addEventListener('DOMContentLoaded', async () => {
-  if (document.fonts) {
+  if (document.fonts && document.fonts.load) {
     try {
-      await document.fonts.ready;
+      await Promise.race([
+        Promise.all([
+          document.fonts.load('700 11px "Noto Sans TC"'),
+          document.fonts.load('10px "Press Start 2P"')
+        ]),
+        new Promise(resolve => setTimeout(resolve, 3000))
+      ]);
     } catch (e) {
-      console.warn('Font loading check bypassed:', e);
+      console.warn('Font loading failed or timed out, continuing with fallback:', e);
     }
   }
   new Phaser.Game(phaserConfig);
