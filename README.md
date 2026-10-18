@@ -2,13 +2,17 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Phaser](https://img.shields.io/badge/Phaser-3.80.1-orange.svg)](https://phaser.io/)
-[![Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020.svg?logo=cloudflare)](https://pages.cloudflare.com/)
-[![Pure ESM](https://img.shields.io/badge/Architecture-Native%20ESM-blue.svg)]()
-[![Zero Build](https://img.shields.io/badge/Build-Zero%20Config-success.svg)]()
+[![Cloudflare Pages](https://img.shields.io/badge/🚀%20Play%20Now-Cloudflare%20Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://bee-vs-hornets.pages.dev/)
+[![GitHub Pages](https://img.shields.io/badge/🎮%20Play%20Now-GitHub%20Pages-222222?style=for-the-badge&logo=github&logoColor=white)](https://tw365-org.github.io/bee-vs-hornets/)
+[![GitHub Actions CI](https://img.shields.io/github/actions/workflow/status/tw365-org/bee-vs-hornets/deploy-pages.yml?branch=main&label=Deploy%20Status&style=flat)](https://github.com/tw365-org/bee-vs-hornets/actions)
 
 > 一款基於 **Phaser 3** 與 **原生 ES Modules (ESM)** 打造的復古 8-Bit 像素街機彈幕射擊遊戲。  
-> 具備 **4 階重武器進階系統**、**程序化像素紋理動態生成**、**Web Audio 晶片合成音效** 與 **花粉核爆必殺技**。  
+> 具備 **4 階重武器進階系統**、**程序化像素紋理動態生成**、**Web Audio 晶片合成音效**、**花粉核爆必殺技** 與 **東方蜂鷹天敵救援彩蛋**。  
 > 專為零構建 (Zero-Build) 設計，隨開即玩，支援直接部署至 **Cloudflare Pages** 與 **GitHub Pages**！
+
+### 🕹️ 線上立即暢玩 (Play Online Instantly)
+- ⚡ **Cloudflare 邊緣極速節點**：👉 [https://bee-vs-hornets.pages.dev/](https://bee-vs-hornets.pages.dev/)
+- 🐙 **GitHub Pages 官方鏡像**：👉 [https://tw365-org.github.io/bee-vs-hornets/](https://tw365-org.github.io/bee-vs-hornets/)
 
 ---
 
@@ -97,13 +101,10 @@ bee-vs-hornets/
 
 ## 💻 本地運行 (Local Development)
 
-### 方法 A：Windows 一鍵即玩（最推薦）
-直接在專案根目錄**雙擊 `play.cmd`**！
-> 腳本會自動偵測 Python 或 Node.js；若都沒有，將自動喚起 Windows 內建的 PowerShell 迷你伺服器並自動開啟預設瀏覽器，100% 免安裝額外環境！
+由於本專案採用原生 ES 模組 (ESM) 架構，需透過本地 HTTP 靜態伺服器開啟以避免瀏覽器 CORS 限制：
 
-### 方法 B：使用任意靜態伺服器
 ```bash
-# 使用 Python
+# 使用 Python (推薦)
 python -m http.server 8080
 
 # 或使用 Node.js
