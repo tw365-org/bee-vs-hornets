@@ -28,11 +28,31 @@ export class GameScene extends Phaser.Scene {
     // 3. 重武器系統
     this.weaponSystem = new WeaponSystem(this);
 
-    // 4. 敵機與子彈群組
+    // 4. 敵機與子彈群組（子彈啟用物件池 maxSize 與回收機制）
     this.enemyGroup = this.physics.add.group({ runChildUpdate: true });
-    this.enemyBulletGroup = this.physics.add.group();
+    this.enemyBulletGroup = this.physics.add.group({
+      maxSize: 80,
+      runChildUpdate: false
+    });
 
-    // 5. 抬頭顯示器 HUD
+    // 5. 原生高性能粒子發射器（零 GC 浪費）
+    this.sparkParticles = this.add.particles(0, 0, 'particle_spark', {
+      speed: { min: -120, max: 120 },
+      scale: { start: 1, end: 0 },
+      alpha: { start: 1, end: 0 },
+      lifespan: { min: 250, max: 450 },
+      emitting: false
+    }).setDepth(150);
+
+    this.pollenParticles = this.add.particles(0, 0, 'particle_pollen', {
+      speed: { min: -180, max: 180 },
+      scale: { start: 2.2, end: 0.2 },
+      alpha: { start: 1, end: 0 },
+      lifespan: { min: 500, max: 1000 },
+      emitting: false
+    }).setDepth(210);
+
+    // 6. 抬頭顯示器 HUD
     this.hud = new HUD(this);
     this.hud.updateScore(this.score);
     this.hud.updateWeapon(this.weaponSystem.getCurrentWeaponConfig());
@@ -99,10 +119,13 @@ export class GameScene extends Phaser.Scene {
       this.hud.updateHp(this.player.hp, this.player.maxHp);
     }
 
-    // 清理越界的敵方子彈
+    // 清理越界的敵方子彈（回收進物件池，零 GC 負擔）
+    const bounds = this.physics.world.bounds;
     this.enemyBulletGroup.getChildren().forEach(b => {
-      if (b.active && (b.y > 660 || b.y < -20 || b.x < -20 || b.x > 500)) {
-        b.destroy();
+      if (b.active && (b.y > bounds.height + 30 || b.y < bounds.y - 30 || b.x < bounds.x - 30 || b.x > bounds.width + 30)) {
+        b.setActive(false);
+        b.setVisible(false);
+        b.body.stop();
       }
     });
 
@@ -156,10 +179,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   spawnEnemyBullet(x, y, angle, speed = 200) {
-    const bullet = this.physics.add.sprite(x, y, 'bullet_enemy');
-    this.enemyBulletGroup.add(bullet);
-    this.physics.velocityFromRotation(angle, speed, bullet.body.velocity);
-    bullet.rotation = angle - Math.PI / 2;
+    let bullet = this.enemyBulletGroup.get(x, y, 'bullet_enemy');
+    if (bullet) {
+      bullet.enableBody(true, x, y, true, true);
+      this.physics.velocityFromRotation(angle, speed, bullet.body.velocity);
+      bullet.rotation = angle - Math.PI / 2;
+    }
   }
 
   // 命中敵機
@@ -194,7 +219,9 @@ export class GameScene extends Phaser.Scene {
   // 玩家被敵彈擊中
   handlePlayerHitBullet(player, bullet) {
     if (!player.active || !bullet.active || player.isInvulnerable) return;
-    bullet.destroy();
+    bullet.setActive(false);
+    bullet.setVisible(false);
+    bullet.body.stop();
     player.takeDamage(20);
   }
 
@@ -244,25 +271,21 @@ export class GameScene extends Phaser.Scene {
       onComplete: () => flash.destroy()
     });
 
-    // 產生大量金色花粉粒子
-    for (let i = 0; i < 45; i++) {
-      const p = this.add.sprite(
-        Phaser.Math.Between(20, 460),
-        Phaser.Math.Between(50, 600),
-        'particle_pollen'
-      ).setDepth(210);
-      this.tweens.add({
-        targets: p,
-        scale: { from: 2.5, to: 0.2 },
-        alpha: { from: 1, to: 0 },
-        y: p.y - Phaser.Math.Between(40, 100),
-        duration: Phaser.Math.Between(600, 1200),
-        onComplete: () => p.destroy()
-      });
+    // 透過原生粒子發射器爆發金色花粉暴風（零 GC 物件建立開銷）
+    for (let i = 0; i < 8; i++) {
+      const px = Phaser.Math.Between(40, 440);
+      const py = Phaser.Math.Between(100, 550);
+      this.pollenParticles.emitParticleAt(px, py, 6);
     }
 
-    // 清除全屏敵彈
-    this.enemyBulletGroup.clear(true, true);
+    // 清除全屏敵彈（回收進物件池，而非 destroy）
+    this.enemyBulletGroup.getChildren().forEach(b => {
+      if (b.active) {
+        b.setActive(false);
+        b.setVisible(false);
+        b.body.stop();
+      }
+    });
 
     // 重創或秒殺場上所有普通敵蜂
     this.enemyGroup.getChildren().forEach(enemy => {
@@ -292,20 +315,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   createExplosionParticles(x, y, color = 0xffaa00, count = 12) {
-    for (let i = 0; i < count; i++) {
-      const p = this.add.rectangle(x, y, 4, 4, color).setDepth(150);
-      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-      const dist = Phaser.Math.FloatBetween(20, 60);
-      this.tweens.add({
-        targets: p,
-        x: x + Math.cos(angle) * dist,
-        y: y + Math.sin(angle) * dist,
-        alpha: 0,
-        scale: 0.2,
-        duration: Phaser.Math.Between(250, 450),
-        onComplete: () => p.destroy()
-      });
-    }
+    // 改用原生高效發射器，零 Allocation
+    this.sparkParticles.emitParticleAt(x, y, count);
   }
 
   onPlayerDied() {

@@ -42,8 +42,9 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
       this.scene.physics.velocityFromRotation(newAngle, this.speed, this.body.velocity);
     }
 
-    // 超出螢幕邊界自動回收
-    if (this.y < -30 || this.y > 670 || this.x < -30 || this.x > 510) {
+    // 超出螢幕邊界自動回收（動態讀取物理世界邊界）
+    const bounds = this.scene.physics.world.bounds;
+    if (this.y < bounds.y - 30 || this.y > bounds.height + 30 || this.x < bounds.x - 30 || this.x > bounds.width + 30) {
       this.setActive(false);
       this.setVisible(false);
       this.body.stop();
