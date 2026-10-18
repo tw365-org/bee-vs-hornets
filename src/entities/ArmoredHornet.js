@@ -20,17 +20,20 @@ export class ArmoredHornet extends Phaser.Physics.Arcade.Sprite {
   update(time, delta) {
     if (!this.active) return;
 
+    // 動態讀取物理世界邊界
+    const bounds = this.scene.physics.world.bounds;
+
     // 碰壁反彈
-    if (this.x < 30) {
+    if (this.x < bounds.x + 30) {
       this.setVelocityX(Math.abs(this.body.velocity.x) || 40);
-    } else if (this.x > 450) {
+    } else if (this.x > bounds.width - 30) {
       this.setVelocityX(-Math.abs(this.body.velocity.x) || -40);
     }
 
     // 抵達底部重回頂端
-    if (this.y > 670) {
-      this.y = -30;
-      this.x = Phaser.Math.Between(50, 430);
+    if (this.y > bounds.height + 30) {
+      this.y = bounds.y - 30;
+      this.x = Phaser.Math.Between(bounds.x + 40, bounds.width - 40);
     }
 
     // 定期發射三向毒針
