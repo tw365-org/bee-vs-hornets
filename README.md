@@ -137,9 +137,9 @@ git add .
 # 3. 提交首次版本
 git commit -m "feat: initial release of Bee vs Hornets arcade game built with Phaser 3 & ESM"
 
-# 4. 關聯遠端 GitHub 倉庫 (請替換為您的 GitHub 倉庫 URL)
+# 4. 關聯遠端 GitHub 倉庫
 git branch -M main
-git remote add origin https://github.com/<您的用戶名>/bee-vs-hornets.git
+git remote add origin https://github.com/tw365-org/bee-vs-hornets.git
 
 # 5. 推送代碼
 git push -u origin main
