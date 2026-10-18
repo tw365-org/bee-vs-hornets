@@ -47,14 +47,15 @@ export class HUD {
       strokeThickness: 4
     }).setOrigin(0.5).setScrollFactor(0).setDepth(250).setAlpha(0);
 
-    // Boss 血量條 (初始隱藏)
-    this.bossHpBg = this.scene.add.rectangle(240, 48, 280, 12, 0x220011).setOrigin(0.5).setDepth(200).setVisible(false);
-    this.bossHpBar = this.scene.add.rectangle(100, 48, 280, 10, 0xff0055).setOrigin(0, 0.5).setDepth(201).setVisible(false);
-    this.bossLabel = this.scene.add.text(240, 36, 'WARNING: QUEEN HORNET', {
+    // Boss 血量條 (緊湊並列於右上方，避免遮擋左側 SCORE / WEAPON)
+    this.bossLabel = this.scene.add.text(464, 12, 'WARNING: QUEEN', {
       fontFamily: this.fontFamily,
-      fontSize: '9px',
+      fontSize: '8px',
       color: '#ff0055'
-    }).setOrigin(0.5).setDepth(202).setVisible(false);
+    }).setOrigin(1, 0).setDepth(202).setVisible(false);
+
+    this.bossHpBg = this.scene.add.rectangle(464, 28, 160, 8, 0x220011).setOrigin(1, 0.5).setDepth(200).setVisible(false);
+    this.bossHpBar = this.scene.add.rectangle(304, 28, 160, 8, 0xff0055).setOrigin(0, 0.5).setDepth(201).setVisible(false);
   }
 
   updateScore(score) {
@@ -116,7 +117,7 @@ export class HUD {
 
     if (show) {
       const ratio = Math.max(0, current / max);
-      this.bossHpBar.width = 280 * ratio;
+      this.bossHpBar.width = 160 * ratio;
     }
   }
 }
