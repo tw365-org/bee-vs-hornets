@@ -182,6 +182,52 @@ class SoundManager {
       gain.disconnect();
     };
   }
+
+  // 蜂鷹天敵長嘯 (Oriental Honey Buzzard Cry)
+  playEagleCall() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    // 鷹嘯高頻下滑帶顫音
+    osc.frequency.setValueAtTime(1200, t);
+    osc.frequency.linearRampToValueAtTime(2400, t + 0.15);
+    osc.frequency.exponentialRampToValueAtTime(600, t + 0.9);
+    gain.gain.setValueAtTime(0.35, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.9);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.9);
+    osc.onended = () => {
+      osc.disconnect();
+      gain.disconnect();
+    };
+  }
+
+  // 拾取特級蜂露回復音效
+  playHeal() {
+    if (!this.enabled || !this.ctx) return;
+    const notes = [523, 659, 784, 1046]; // C-E-G-C 上揚吉利和弦
+    notes.forEach((freq, idx) => {
+      const t = this.ctx.currentTime + idx * 0.05;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.3, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(t);
+      osc.stop(t + 0.12);
+      osc.onended = () => {
+        osc.disconnect();
+        gain.disconnect();
+      };
+    });
+  }
 }
 
 export const soundManager = new SoundManager();

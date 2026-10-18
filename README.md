@@ -20,7 +20,8 @@
 - 👾 **高智能敵機編隊**：普通工蜂陣型巡邏俯衝、重型裝甲蜂散射尾針、以及多階段變態狂暴的虎頭蜂女王 (Queen Boss)。
 - 🎨 **100% 程式化像素美術 (Procedural Pixel Art)**：遊戲內建 Canvas 像素繪製引擎，零靜態外部圖片依賴，永遠不會遇到 404 斷圖。
 - 🔊 **Web Audio 晶片級即時合成**：方波射擊、白噪聲爆炸、A Major 升級琶音，無外連音檔載入延遲。
-- 🚀 **雲端與開源友善**：零打包配置（No Webpack/Vite required），可直接丟上 Cloudflare Pages 或任何靜態主機。
+- 🦅 **大自然食物鏈彩蛋 (Oriental Honey Buzzard Rescue)**：當小蜜蜂瀕死 (HP ≤ 25%) 或 Boss 戰陷入苦戰時，虎頭蜂的天敵——**東方蜂鷹**會長嘯破雲而降，以霸氣俯衝橫掃群蜂並空投「特級蜂露」實施大自然生態救援！
+- 🚀 **雲端與開源友善**：零打包配置（No Webpack/Vite required），已設定好 GitHub Actions CI/CD，同時支援 **Cloudflare Pages** 與 **GitHub Pages**！
 
 ---
 
@@ -44,6 +45,7 @@
 | **LV.2** | 2,500 PTS | **蜂王追蹤微導彈** | 雙針 + 2 枚具備主動導引功能的微型巡弋飛彈 | 綠色推進火焰飛彈 |
 | **LV.3** | 5,000 PTS | **重型等離子轟爆砲** | 穿透型巨型電漿光球，附帶電弧與範圍貫穿傷害 | 紫粉巨型能量球 |
 | **SP** | 炸彈圖示 | **花粉天譴核爆** | 清除全場敵方彈幕，並秒殺或重創全螢幕敵人 | 全屏金粉暴風 |
+| **EASTER** | 危急時刻 | **東方蜂鷹天降神援** | 虎頭蜂天敵空襲，肅清路徑敵機並空投特級蜂露回復 +50 HP 與補給核彈 | 巨翼俯衝與金色火花 |
 
 ---
 
@@ -51,9 +53,9 @@
 
 ```
 bee-vs-hornets/
-├── index.html                  # 遊戲首頁入口 (載入 Phaser 3 CDN 與 main.js 模組)
-├── index.legacy.html           # 第一代原生 Canvas 原型歷史備份
-├── play.cmd                    # Windows 零依賴雙擊即玩伺服器
+├── .github/workflows/
+│   └── deploy-pages.yml        # GitHub Pages 自動化佈署 CI/CD 工作流
+├── index.html                  # 遊戲首頁入口 (包含小蜜蜂專屬 SVG Favicon 與 Phaser 3 CDN)
 ├── _headers                    # Cloudflare Pages 快取與安全標頭配置
 ├── LICENSE                     # MIT 開源授權條款
 ├── README.md                   # 專案詳細說明文檔

@@ -23,3 +23,11 @@ dist/
 # Logs
 *.log
 npm-debug.log*
+
+# Local Scratch & Legacy Backups
+scratch/
+*.legacy.*
+play.cmd
+*.tmp
+*.bak
+*.swp

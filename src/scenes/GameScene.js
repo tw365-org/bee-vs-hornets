@@ -59,7 +59,13 @@ export class GameScene extends Phaser.Scene {
     this.hud.updateHp(this.player.hp, this.player.maxHp);
     this.hud.updateBombs(this.player.bombs);
 
-    // 6. 物理碰撞監聽
+    // 7. 彩蛋掉落物群組 (特級蜂露 Royal Pollen Dew)
+    this.dropsGroup = this.physics.add.group();
+    this.physics.add.overlap(this.player, this.dropsGroup, this.handleCollectDew, null, this);
+    this.buzzardCooldown = 0; // 蜂鷹救援冷卻時間
+    this.bossFightTimer = 0;  // Boss 膠著計時器
+
+    // 8. 物理碰撞監聽
     this.physics.add.overlap(
       this.weaponSystem.bullets,
       this.enemyGroup,
@@ -134,6 +140,35 @@ export class GameScene extends Phaser.Scene {
       this.wave++;
       this.spawnNextWave();
     }
+
+    // 蜂鷹救援冷卻遞減
+    if (this.buzzardCooldown > 0) {
+      this.buzzardCooldown -= delta;
+    }
+
+    // Boss 戰膠著計時
+    if (this.bossActive) {
+      this.bossFightTimer += delta;
+    } else {
+      this.bossFightTimer = 0;
+    }
+
+    // 檢查天敵彩蛋救援條件：玩家 HP <= 25% 或 Boss 膠著超過 30 秒
+    if (this.buzzardCooldown <= 0 && this.player && this.player.active) {
+      const isCriticalHp = this.player.hp <= this.player.maxHp * 0.25 && this.enemyGroup.countActive(true) > 0;
+      const isBossStalemate = this.bossActive && this.bossFightTimer > 30000;
+
+      if (isCriticalHp || isBossStalemate) {
+        this.summonHoneyBuzzard();
+      }
+    }
+
+    // 更新特級蜂露掉落物 (緩慢旋轉飄落)
+    this.dropsGroup.getChildren().forEach(drop => {
+      if (drop.active && drop.y > bounds.height + 20) {
+        drop.destroy();
+      }
+    });
   }
 
   spawnNextWave() {
@@ -323,5 +358,118 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(1000, () => {
       this.scene.start('GameOverScene', { score: this.score, wave: this.wave });
     });
+  }
+
+  // 大自然食物鏈彩蛋：召喚東方蜂鷹 (Oriental Honey Buzzard) 救援
+  summonHoneyBuzzard() {
+    this.buzzardCooldown = 45000; // 45 秒冷卻，避免頻繁觸發
+    soundManager.playEagleCall();
+
+    // 螢幕上方橫幅提示自然守護者登場
+    const buzzardBanner = this.add.text(240, 200, '★ 大自然食物鏈：天敵蜂鷹降臨！★\n[ ORIENTAL HONEY BUZZARD RESCUE ]', {
+      fontFamily: '"Press Start 2P", monospace, sans-serif',
+      fontSize: '10px',
+      color: '#ffd700',
+      align: 'center',
+      stroke: '#3e1f07',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(260);
+
+    this.tweens.add({
+      targets: buzzardBanner,
+      alpha: 0,
+      y: 170,
+      duration: 2200,
+      onComplete: () => buzzardBanner.destroy()
+    });
+
+    // 建立蜂鷹實體（由右上天際破雲俯衝掠過）
+    const buzzard = this.physics.add.sprite(520, -60, 'easter_honey_buzzard').setDepth(250);
+    buzzard.setScale(1.4);
+
+    // 蜂鷹俯衝掠食軌跡動畫
+    this.tweens.add({
+      targets: buzzard,
+      x: -100,
+      y: 680,
+      duration: 2200,
+      ease: 'Quad.easeInOut',
+      onUpdate: () => {
+        // 蜂鷹飛行時在身後留下一串金色微風火花
+        this.sparkParticles.emitParticleAt(buzzard.x, buzzard.y - 15, 2);
+
+        // 掠過途徑肅清普通虎頭蜂並重創 Boss
+        this.enemyGroup.getChildren().forEach(enemy => {
+          if (enemy.active && Phaser.Math.Distance.Between(buzzard.x, buzzard.y, enemy.x, enemy.y) < 95) {
+            if (enemy === this.currentBoss) {
+              enemy.takeDamage(250);
+              if (this.bossActive && this.currentBoss) {
+                this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
+              }
+            } else {
+              enemy.takeDamage(150); // 秒殺普通或裝甲蜂
+            }
+          }
+        });
+      },
+      onComplete: () => {
+        buzzard.destroy();
+      }
+    });
+
+    // 清除全場敵方毒針彈幕
+    this.enemyBulletGroup.getChildren().forEach(b => {
+      if (b.active) {
+        b.setActive(false);
+        b.setVisible(false);
+        b.body.stop();
+      }
+    });
+
+    // 蜂鷹在場中央空投一顆高營養「特級蜂露 (Royal Pollen Dew)」給小蜜蜂
+    this.time.delayedCall(800, () => {
+      const dew = this.dropsGroup.create(240, 150, 'item_honey_dew');
+      dew.setVelocity(0, 90);
+      dew.setDepth(205);
+
+      // 閃爍呼吸光暈
+      this.tweens.add({
+        targets: dew,
+        scale: { from: 1.4, to: 0.9 },
+        yoyo: true,
+        repeat: -1,
+        duration: 400
+      });
+    });
+  }
+
+  // 小蜜蜂拾取特級蜂露
+  handleCollectDew(player, dew) {
+    if (!dew.active) return;
+    dew.destroy();
+    soundManager.playHeal();
+
+    // 回復 50 點生命值並補充 1 顆核彈
+    player.hp = Math.min(player.maxHp, player.hp + 50);
+    if (player.bombs < GAME_CONFIG.PLAYER.MAX_BOMBS) {
+      player.bombs++;
+    }
+    this.hud.updateHp(player.hp, player.maxHp);
+    this.hud.updateBombs(player.bombs);
+
+    // 爆發綠金花粉治癒特效
+    for (let i = 0; i < 15; i++) {
+      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+      const dist = Phaser.Math.FloatBetween(20, 50);
+      const healSpark = this.add.rectangle(player.x, player.y, 4, 4, 0x00ffcc).setDepth(206);
+      this.tweens.add({
+        targets: healSpark,
+        x: player.x + Math.cos(angle) * dist,
+        y: player.y + Math.sin(angle) * dist,
+        alpha: 0,
+        duration: 500,
+        onComplete: () => healSpark.destroy()
+      });
+    }
   }
 }

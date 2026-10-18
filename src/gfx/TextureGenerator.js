@@ -11,6 +11,7 @@ export class TextureGenerator {
     this.createQueenTextures(scene);
     this.createBulletTextures(scene);
     this.createParticleTextures(scene);
+    this.createBuzzardTextures(scene);
   }
 
   // 輔助繪製像素方塊
@@ -283,5 +284,81 @@ export class TextureGenerator {
     ctx.arc(4, 4, 4, 0, Math.PI * 2);
     ctx.fill();
     scene.textures.addCanvas('particle_pollen', cv);
+  }
+
+  // 7. 彩蛋實體：東方蜂鷹 (Oriental Honey Buzzard - 虎頭蜂天敵)
+  static createBuzzardTextures(scene) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 80;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const s = 2; // 40x32 網格放大
+
+    // 蜂鷹軀體 (棕褐、栗色羽毛)
+    for (let x = 16; x <= 23; x++) {
+      for (let y = 10; y <= 26; y++) {
+        this.drawPixel(ctx, x, y, '#582f0e', s);
+      }
+    }
+
+    // 腹部條紋羽毛 (淡褐與白斑)
+    for (let x = 17; x <= 22; x++) {
+      this.drawPixel(ctx, x, 14, '#ddb892', s);
+      this.drawPixel(ctx, x, 18, '#ddb892', s);
+      this.drawPixel(ctx, x, 22, '#ddb892', s);
+    }
+
+    // 鷹頭與銳利黃喙
+    for (let x = 17; x <= 22; x++) {
+      for (let y = 5; y <= 9; y++) {
+        this.drawPixel(ctx, x, y, '#7f4f24', s);
+      }
+    }
+    // 金黃銳喙
+    this.drawPixel(ctx, 19, 3, '#ffcc00', s);
+    this.drawPixel(ctx, 20, 3, '#ffcc00', s);
+    this.drawPixel(ctx, 19, 4, '#e67e22', s);
+    this.drawPixel(ctx, 20, 4, '#e67e22', s);
+
+    // 鷹眼 (金黃底 + 黑瞳)
+    this.drawPixel(ctx, 18, 6, '#ffd700', s);
+    this.drawPixel(ctx, 21, 6, '#ffd700', s);
+    this.drawPixel(ctx, 18, 7, '#000000', s);
+    this.drawPixel(ctx, 21, 7, '#000000', s);
+
+    // 雄偉巨翼 (展開達 80px，深棕與漸層飛羽)
+    for (let y = 10; y <= 22; y++) {
+      const wingSpan = Math.floor((22 - y) * 1.5) + 6;
+      for (let w = 0; w <= wingSpan; w++) {
+        const c = (w % 2 === 0) ? '#6f4e37' : '#936639';
+        this.drawPixel(ctx, 16 - w, y, c, s);
+        this.drawPixel(ctx, 23 + w, y, c, s);
+      }
+    }
+
+    // 尾羽
+    for (let x = 17; x <= 22; x++) {
+      for (let y = 27; y <= 30; y++) {
+        this.drawPixel(ctx, x, y, '#3d2314', s);
+      }
+    }
+
+    scene.textures.addCanvas('easter_honey_buzzard', canvas);
+
+    // 特級蜂露 (救援掉落物，綠金光澤結晶)
+    const dewCanvas = document.createElement('canvas');
+    dewCanvas.width = 16;
+    dewCanvas.height = 16;
+    const dctx = dewCanvas.getContext('2d');
+    let grad = dctx.createRadialGradient(8, 8, 1, 8, 8, 7);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.4, '#00ffcc');
+    grad.addColorStop(0.8, '#ffea00');
+    grad.addColorStop(1, 'transparent');
+    dctx.fillStyle = grad;
+    dctx.beginPath();
+    dctx.arc(8, 8, 7, 0, Math.PI * 2);
+    dctx.fill();
+    scene.textures.addCanvas('item_honey_dew', dewCanvas);
   }
 }
