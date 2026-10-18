@@ -47,20 +47,22 @@ body {
   padding: 6px 12px 10px;
   border-bottom: 2px dashed #444;
   margin-bottom: 10px;
-  font-size: 11px;
+  font-size: 9px;
   color: #ffdd44;
   text-shadow: 0 0 8px rgba(255, 221, 68, 0.7);
+  gap: 8px;
 }
 
 .marquee-badge {
   background: #ff0055;
   color: #fff;
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-radius: 4px;
-  font-size: 9px;
-  letter-spacing: 1px;
-  box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 8px rgba(255, 0, 85, 0.6);
   animation: pulseBadge 1.5s infinite alternate;
+  white-space: nowrap;
 }
 
 @keyframes pulseBadge {

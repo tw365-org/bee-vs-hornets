@@ -60,8 +60,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setVelocity(vx, vy);
 
-    // 限制玩家活動範圍在螢幕下方 60% 區域
+    // 限制玩家活動範圍：上方不超過 220px，下方不超過 585px (保持在 614px 血條上方安全防空區)
     if (this.y < 220) this.y = 220;
+    if (this.y > 585) this.y = 585;
 
     // 自動微傾斜感
     if (vx < 0) {
