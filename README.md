@@ -12,6 +12,14 @@
 
 ---
 
+## 📸 遊戲實機畫面 (Screenshots)
+
+| 🕹️ 復古街機主選單 (Title Menu) | ⚔️ 彈幕激戰與重武器進階 (Gameplay) |
+|:---:|:---:|
+| ![Title Menu](./assets/screenshots/menu.png) | ![Gameplay Battle](./assets/screenshots/gameplay.png) |
+
+---
+
 ## 🎮 遊戲特點 (Features)
 
 - 🕹️ **經典街機手感**：CRT 掃描線濾鏡、8-Bit 點陣字體與懷舊像素微光特效。
