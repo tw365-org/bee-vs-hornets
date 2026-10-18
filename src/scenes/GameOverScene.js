@@ -90,14 +90,16 @@ export class GameOverScene extends Phaser.Scene {
       repeat: -1
     });
 
-    this.input.keyboard.on('keydown-SPACE', () => {
-      soundManager.playUpgrade();
-      this.scene.start('GameScene');
-    });
+    // 防止玩家戰鬥中狂按空白鍵導致瞬間略過結算畫面（設定 1.2 秒輸入緩衝冷卻）
+    this.readyAt = this.time.now + 1200;
 
-    this.input.on('pointerdown', () => {
+    const tryRestart = () => {
+      if (this.time.now < this.readyAt) return;
       soundManager.playUpgrade();
       this.scene.start('GameScene');
-    });
+    };
+
+    this.input.keyboard.on('keydown-SPACE', tryRestart);
+    this.input.on('pointerdown', tryRestart);
   }
 }

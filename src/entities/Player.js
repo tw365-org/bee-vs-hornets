@@ -98,14 +98,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       return true;
     }
 
-    // 進入短暫無敵狀態並閃爍
+    // 進入短暫無敵狀態並閃爍 (連動 GAME_CONFIG.PLAYER.INVULNERABLE_DURATION)
     this.isInvulnerable = true;
+    const totalDuration = GAME_CONFIG.PLAYER.INVULNERABLE_DURATION || 1500;
+    const flashCount = 6;
+    const flashStep = Math.floor(totalDuration / (flashCount * 2));
+
     this.scene.tweens.add({
       targets: this,
       alpha: 0.2,
-      duration: 100,
+      duration: flashStep,
       yoyo: true,
-      repeat: 6,
+      repeat: flashCount - 1,
       onComplete: () => {
         this.alpha = 1;
         this.isInvulnerable = false;

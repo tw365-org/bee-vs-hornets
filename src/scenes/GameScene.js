@@ -165,8 +165,8 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // 更新特級蜂露掉落物 (緩慢旋轉飄落)
-    this.dropsGroup.getChildren().forEach(drop => {
+    // 更新特級蜂露掉落物 (緩慢旋轉飄落，以 slice 快照安全銷毀)
+    this.dropsGroup.getChildren().slice().forEach(drop => {
       if (drop.active && drop.y > bounds.height + 20) {
         drop.destroy();
       }
@@ -312,7 +312,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 清除全屏敵彈（回收進物件池，而非 destroy）
-    this.enemyBulletGroup.getChildren().forEach(b => {
+    // 清除全場敵方子彈（快照安全回收進物件池）
+    this.enemyBulletGroup.getChildren().slice().forEach(b => {
       if (b.active) {
         b.setActive(false);
         b.setVisible(false);
@@ -320,8 +321,8 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 重創或秒殺場上所有普通敵蜂
-    this.enemyGroup.getChildren().forEach(enemy => {
+    // 重創或秒殺場上所有普通敵蜂（使用 slice() 快照，避免迭代中 destroy 導致 splice 漏殺）
+    this.enemyGroup.getChildren().slice().forEach(enemy => {
       if (enemy.active) {
         if (enemy === this.currentBoss) {
           enemy.takeDamage(200);
@@ -385,6 +386,9 @@ export class GameScene extends Phaser.Scene {
     const buzzard = this.physics.add.sprite(520, -60, 'easter_honey_buzzard').setDepth(250);
     buzzard.setScale(1.4);
 
+    // 蜂鷹單次傷害守門集合 (防止 Tween onUpdate 逐幀扣血導致 Boss 秒殺且受 FPS 影響)
+    const buzzardHitTargets = new Set();
+
     // 蜂鷹俯衝掠食軌跡動畫
     this.tweens.add({
       targets: buzzard,
@@ -396,11 +400,12 @@ export class GameScene extends Phaser.Scene {
         // 蜂鷹飛行時在身後留下一串金色微風火花
         this.sparkParticles.emitParticleAt(buzzard.x, buzzard.y - 15, 2);
 
-        // 掠過途徑肅清普通虎頭蜂並重創 Boss
-        this.enemyGroup.getChildren().forEach(enemy => {
-          if (enemy.active && Phaser.Math.Distance.Between(buzzard.x, buzzard.y, enemy.x, enemy.y) < 95) {
+        // 掠過途徑肅清普通虎頭蜂並重創 Boss (以快照迭代 + 單次判定)
+        this.enemyGroup.getChildren().slice().forEach(enemy => {
+          if (enemy.active && !buzzardHitTargets.has(enemy) && Phaser.Math.Distance.Between(buzzard.x, buzzard.y, enemy.x, enemy.y) < 95) {
+            buzzardHitTargets.add(enemy);
             if (enemy === this.currentBoss) {
-              enemy.takeDamage(250);
+              enemy.takeDamage(250); // 對 Boss 造成一次性 250 點重創
               if (this.bossActive && this.currentBoss) {
                 this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
               }
@@ -415,8 +420,8 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 清除全場敵方毒針彈幕
-    this.enemyBulletGroup.getChildren().forEach(b => {
+    // 清除全場敵方毒針彈幕 (快照安全回收)
+    this.enemyBulletGroup.getChildren().slice().forEach(b => {
       if (b.active) {
         b.setActive(false);
         b.setVisible(false);

@@ -82,9 +82,12 @@ export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
         });
       }
     } else {
-      // 招式 3: 召喚兩隻工蜂護衛
-      this.scene.spawnHornetMinion(this.x - 40, this.y);
-      this.scene.spawnHornetMinion(this.x + 40, this.y);
+      // 招式 3: 召喚兩隻工蜂護衛（限制場上護衛上限為 6 隻，避免敵機無上限暴走累積）
+      const currentMinions = this.scene.enemyGroup.countActive(true);
+      if (currentMinions <= 6) {
+        this.scene.spawnHornetMinion(this.x - 40, this.y);
+        this.scene.spawnHornetMinion(this.x + 40, this.y);
+      }
     }
   }
 

@@ -21,7 +21,7 @@ export class WaveDifficultyManager {
   getDifficulty(wave) {
     const isBossWave = wave % 3 === 0;
 
-    // 1. 速度倍率：前兩波 1.0，第 3 波起每波提升 5%~8%
+    // 1. 速度倍率：Wave 1 為 1.0，第 2 波起每波提升 6%
     const speedMultiplier = 1.0 + Math.max(0, wave - 1) * 0.06;
 
     // 2. 敵彈速度倍率

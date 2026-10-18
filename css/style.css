@@ -102,6 +102,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 10px 10px 4px;
   font-size: 9px;
   color: #889;
@@ -110,7 +112,8 @@ body {
 
 .controls-hint {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .key-tag {
