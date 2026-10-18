@@ -10,27 +10,39 @@ export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
     this.patternTimer = 0;
     this.spiralAngle = 0;
     this.isEnraged = false;
+    this.speedMultiplier = 1.0;
   }
 
-  spawn(x, y) {
+  spawn(x, y, difficulty = null) {
     this.enableBody(true, x, y, true, true);
-    this.maxHp = GAME_CONFIG.ENEMIES.QUEEN.hp;
+    if (difficulty) {
+      this.speedMultiplier = difficulty.speedMultiplier || 1.0;
+      // Boss 血量隨波次加成（第 6 波、第 9 波等輪替登場時更耐打）
+      const extraHp = Math.max(0, difficulty.wave - 3) * 60;
+      this.maxHp = GAME_CONFIG.ENEMIES.QUEEN.hp + extraHp;
+    } else {
+      this.speedMultiplier = 1.0;
+      this.maxHp = GAME_CONFIG.ENEMIES.QUEEN.hp;
+    }
+
     this.hp = this.maxHp;
     this.isEnraged = false;
-    this.setVelocity(80, 0);
+    this.setVelocity(80 * this.speedMultiplier, 0);
     this.patternTimer = 1000;
     this.alpha = 1;
     this.setScale(1.2);
+    this.clearTint();
   }
 
   update(time, delta) {
     if (!this.active) return;
 
     // 左右來回移動
+    const moveSpeed = (this.isEnraged ? 140 : 80) * this.speedMultiplier;
     if (this.x < 80) {
-      this.setVelocityX(this.isEnraged ? 140 : 80);
+      this.setVelocityX(moveSpeed);
     } else if (this.x > 400) {
-      this.setVelocityX(this.isEnraged ? -140 : -80);
+      this.setVelocityX(-moveSpeed);
     }
 
     // 狂暴判斷 (HP < 40%)
@@ -43,7 +55,7 @@ export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
     // 招式輪迴
     this.patternTimer -= delta;
     if (this.patternTimer <= 0) {
-      this.patternTimer = this.isEnraged ? 1200 : 2000;
+      this.patternTimer = (this.isEnraged ? 1000 : 1800) / this.speedMultiplier;
       this.castSkill();
     }
   }
@@ -54,17 +66,19 @@ export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
 
     if (rnd < 0.5) {
       // 招式 1: 8 方向螺旋擴散彈幕
+      const bulletSpeed = 180 * this.speedMultiplier;
       for (let i = 0; i < 8; i++) {
         const rad = this.spiralAngle + (i * Math.PI) / 4;
-        this.scene.spawnEnemyBullet(this.x, this.y + 20, rad, 180);
+        this.scene.spawnEnemyBullet(this.x, this.y + 20, rad, bulletSpeed);
       }
       this.spiralAngle += 0.25;
     } else if (rnd < 0.8) {
       // 招式 2: 直衝玩家的扇形追蹤尾針
       if (this.scene.player && this.scene.player.active) {
         const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, this.scene.player.x, this.scene.player.y);
+        const bulletSpeed = 260 * this.speedMultiplier;
         [-0.2, 0, 0.2].forEach(offset => {
-          this.scene.spawnEnemyBullet(this.x, this.y + 20, baseAngle + offset, 260);
+          this.scene.spawnEnemyBullet(this.x, this.y + 20, baseAngle + offset, bulletSpeed);
         });
       }
     } else {
@@ -85,12 +99,6 @@ export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
     return false;
   }
 
-  /**
-   * 女王蜂被擊殺時調用：
-   * 1. 播放震撼重低音爆炸音效
-   * 2. 觸發 GameScene.onQueenDefeated 結算高額積分 (+2500)、回復玩家 HP (+40) 與獎勵核彈 (+1)
-   * 3. 徹底銷毀實體釋放物理與渲染節點
-   */
   die() {
     soundManager.playExplosion(true);
     this.scene.onQueenDefeated(this);

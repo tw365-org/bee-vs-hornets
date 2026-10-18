@@ -4,6 +4,7 @@ import { Hornet } from '../entities/Hornet.js';
 import { ArmoredHornet } from '../entities/ArmoredHornet.js';
 import { QueenBoss } from '../entities/QueenBoss.js';
 import { WeaponSystem } from '../weapons/WeaponSystem.js';
+import { WaveDifficultyManager } from '../systems/WaveDifficultyManager.js';
 import { HUD } from '../ui/HUD.js';
 import { soundManager } from '../audio/SoundManager.js';
 
@@ -18,6 +19,7 @@ export class GameScene extends Phaser.Scene {
     this.bossActive = false;
     this.currentBoss = null;
     this.stars = [];
+    this.difficultyManager = new WaveDifficultyManager(this);
 
     // 1. 動態視差星空背景
     this.createStarfield();
@@ -172,45 +174,41 @@ export class GameScene extends Phaser.Scene {
   }
 
   spawnNextWave() {
-    // 依波次遞增難度
-    if (this.wave % 3 === 0) {
-      // 每 3 波出現一次女王 Boss
-      this.spawnQueenBoss();
-    } else {
-      // 標準群蜂編隊 (5 ~ 12 隻)
-      const count = Math.min(12, 4 + this.wave * 2);
-      for (let i = 0; i < count; i++) {
-        const col = i % 6;
-        const row = Math.floor(i / 6);
-        const x = 70 + col * 68;
-        const y = 80 + row * 55;
+    const diff = this.difficultyManager.getDifficulty(this.wave);
 
-        // 第 2 波之後加入裝甲蜂
-        if (this.wave > 1 && i % 3 === 0) {
-          const armored = new ArmoredHornet(this, x, y);
+    if (diff.isBossWave) {
+      // 每 3 波出現一次女王 Boss
+      this.spawnQueenBoss(diff);
+    } else {
+      // 根據 WaveDifficultyManager 取得動態陣型配置
+      const formation = this.difficultyManager.getWaveFormation(this.wave);
+      formation.forEach(item => {
+        if (item.type === 'ARMORED') {
+          const armored = new ArmoredHornet(this, item.x, item.y);
           this.enemyGroup.add(armored, true);
-          armored.spawn(x, y);
+          armored.spawn(item.x, item.y, diff);
         } else {
-          const hornet = new Hornet(this, x, y);
+          const hornet = new Hornet(this, item.x, item.y);
           this.enemyGroup.add(hornet, true);
-          hornet.spawn(x, y);
+          hornet.spawn(item.x, item.y, diff);
         }
-      }
+      });
     }
   }
 
-  spawnQueenBoss() {
+  spawnQueenBoss(diff = null) {
     this.bossActive = true;
     this.currentBoss = new QueenBoss(this, 240, 110);
     this.enemyGroup.add(this.currentBoss, true);
-    this.currentBoss.spawn(240, 110);
+    this.currentBoss.spawn(240, 110, diff);
     this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
   }
 
   spawnHornetMinion(x, y) {
+    const diff = this.difficultyManager ? this.difficultyManager.getDifficulty(this.wave) : null;
     const minion = new Hornet(this, x, y);
     this.enemyGroup.add(minion, true);
-    minion.spawn(x, y);
+    minion.spawn(x, y, diff);
   }
 
   spawnEnemyBullet(x, y, angle, speed = 200) {
