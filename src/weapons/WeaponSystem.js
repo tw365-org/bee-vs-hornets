@@ -104,7 +104,7 @@ export class WeaponSystem {
     if (!this.scene.enemyGroup) return null;
     let nearest = null;
     let minDist = Infinity;
-    this.scene.enemyGroup.getChildren().forEach(enemy => {
+    this.scene.enemyGroup.getChildren().slice().forEach(enemy => {
       if (enemy.active && enemy.y > 0 && enemy.y < 580) {
         const d = Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y);
         if (d < minDist) {

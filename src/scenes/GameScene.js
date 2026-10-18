@@ -127,9 +127,9 @@ export class GameScene extends Phaser.Scene {
       this.hud.updateHp(this.player.hp, this.player.maxHp);
     }
 
-    // 清理越界的敵方子彈（回收進物件池，零 GC 負擔）
+    // 清理越界的敵方子彈（快照遍歷安全回收進物件池，零 GC 負擔）
     const bounds = this.physics.world.bounds;
-    this.enemyBulletGroup.getChildren().forEach(b => {
+    this.enemyBulletGroup.getChildren().slice().forEach(b => {
       if (b.active && (b.y > bounds.height + 30 || b.y < bounds.y - 30 || b.x < bounds.x - 30 || b.x > bounds.width + 30)) {
         b.setActive(false);
         b.setVisible(false);

@@ -6,7 +6,7 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, 'hornet_normal');
     this.hp = GAME_CONFIG.ENEMIES.HORNET.hp;
     this.scoreValue = GAME_CONFIG.ENEMIES.HORNET.score;
-    this.state = 'FLYING'; // 'FLYING', 'DIVING', 'FLIP_ATTACK', 'RETURNING'
+    this.state = 'FLYING'; // 'FLYING', 'DIVING', 'FLIP_ATTACK'
     this.diveTimer = 0;
     this.initialX = x;
     this.initialY = y;
@@ -26,11 +26,13 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
     // 導入波次動態難度數值
     if (difficulty) {
       this.speedMultiplier = difficulty.speedMultiplier || 1.0;
+      this.bulletSpeedMultiplier = difficulty.bulletSpeedMultiplier || 1.0;
       this.shootChance = difficulty.shootChance || 0.5;
       this.turnAroundChance = difficulty.turnAroundChance || 0;
       this.hp = GAME_CONFIG.ENEMIES.HORNET.hp + (difficulty.hpBonus || 0);
     } else {
       this.speedMultiplier = 1.0;
+      this.bulletSpeedMultiplier = 1.0;
       this.shootChance = 0.5;
       this.turnAroundChance = 0;
       this.hp = GAME_CONFIG.ENEMIES.HORNET.hp;
@@ -116,7 +118,7 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
       
       // 俯衝瞬間依波次 shootChance 射出一發尾針
       if (Math.random() < this.shootChance) {
-        const bulletSpeed = 200 * (this.speedMultiplier || 1.0);
+        const bulletSpeed = 200 * (this.bulletSpeedMultiplier || 1.0);
         this.scene.spawnEnemyBullet(this.x, this.y + 10, angle, bulletSpeed);
       }
     } else {
@@ -143,7 +145,7 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
 
     // 回頭突刺時有 60% 機率逆向發射背刺尾針
     if (Math.random() < 0.6) {
-      const bulletSpeed = 220 * (this.speedMultiplier || 1.0);
+      const bulletSpeed = 220 * (this.bulletSpeedMultiplier || 1.0);
       this.scene.spawnEnemyBullet(this.x, this.y - 10, backstabAngle, bulletSpeed);
     }
 
