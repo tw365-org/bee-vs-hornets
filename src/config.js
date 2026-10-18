@@ -75,5 +75,12 @@ export const GAME_CONFIG = {
       score: 2500,
       speed: 80,
     }
+  },
+
+  // 大自然食物鏈彩蛋：東方蜂鷹天敵援助參數
+  EASTER: {
+    BOSS_DAMAGE: 250,    // 蜂鷹掠過對女王 Boss 造成的重創傷害
+    MINION_DAMAGE: 150,  // 蜂鷹掠過對普通工蜂/裝甲蜂造成的秒殺傷害
+    COOLDOWN: 45000,     // 援助觸發冷卻時間 (毫秒)
   }
 };

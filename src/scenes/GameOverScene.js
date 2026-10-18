@@ -101,5 +101,12 @@ export class GameOverScene extends Phaser.Scene {
 
     this.input.keyboard.on('keydown-SPACE', tryRestart);
     this.input.on('pointerdown', tryRestart);
+
+    // Gamepad 支援：按 A (button 0) 或 Start (button 9) 重新開始 (遵守 1.2 秒冷卻)
+    this.input.gamepad?.on('down', (pad, button) => {
+      if (button.index === 0 || button.index === 9) {
+        tryRestart();
+      }
+    });
   }
 }

@@ -51,11 +51,13 @@ export class MenuScene extends Phaser.Scene {
       { lv: 'LV.3', name: '重型等離子轟爆砲', score: '5,000 PTS', color: '#ff00ff' }
     ];
 
+    const chFont = '"Noto Sans TC", "Press Start 2P", sans-serif';
+
     weaponList.forEach((w, idx) => {
       const y = panelY + 28 + idx * 24;
       this.add.text(80, y, `${w.lv} ${w.name}`, {
-        fontFamily: font,
-        fontSize: '9px',
+        fontFamily: chFont,
+        fontSize: '11px',
         color: w.color
       });
       this.add.text(400, y, w.score, {
@@ -73,10 +75,10 @@ export class MenuScene extends Phaser.Scene {
       color: '#8899aa'
     }).setOrigin(0.5);
 
-    this.add.text(240, ctrlY + 24, '← → 或 A / D : 左右穿梭', { fontFamily: font, fontSize: '8px', color: '#ffffff' }).setOrigin(0.5);
-    this.add.text(240, ctrlY + 44, '↑ ↓ 或 W / S : 微調身位', { fontFamily: font, fontSize: '8px', color: '#ffffff' }).setOrigin(0.5);
-    this.add.text(240, ctrlY + 64, 'SPACEBAR : 高速連射', { fontFamily: font, fontSize: '8px', color: '#00ffff' }).setOrigin(0.5);
-    this.add.text(240, ctrlY + 84, 'X / B 鍵 : 花粉全屏核爆', { fontFamily: font, fontSize: '8px', color: '#ff0077' }).setOrigin(0.5);
+    this.add.text(240, ctrlY + 24, '← → / A D / 搖桿 : 左右穿梭', { fontFamily: chFont, fontSize: '11px', color: '#ffffff' }).setOrigin(0.5);
+    this.add.text(240, ctrlY + 44, '↑ ↓ / W S / 搖桿 : 微調身位', { fontFamily: chFont, fontSize: '11px', color: '#ffffff' }).setOrigin(0.5);
+    this.add.text(240, ctrlY + 64, 'SPACE / 手把 A : 高速連射', { fontFamily: chFont, fontSize: '11px', color: '#00ffff' }).setOrigin(0.5);
+    this.add.text(240, ctrlY + 84, 'X B / 手把 B X : 花粉全屏核爆', { fontFamily: chFont, fontSize: '11px', color: '#ff0077' }).setOrigin(0.5);
 
     // 開始提示 (呼吸燈閃爍)
     const startText = this.add.text(240, 560, 'PRESS SPACE TO START', {
@@ -95,17 +97,21 @@ export class MenuScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // 鍵盤監聽開始
-    this.input.keyboard.on('keydown-SPACE', () => {
+    const startGame = () => {
       soundManager.init();
       soundManager.playUpgrade();
       this.scene.start('GameScene');
-    });
+    };
 
-    this.input.on('pointerdown', () => {
-      soundManager.init();
-      soundManager.playUpgrade();
-      this.scene.start('GameScene');
+    // 鍵盤監聽開始
+    this.input.keyboard.on('keydown-SPACE', startGame);
+    this.input.on('pointerdown', startGame);
+
+    // Gamepad 支援：按 A (button 0) 或 Start (button 9) 開始
+    this.input.gamepad?.on('down', (pad, button) => {
+      if (button.index === 0 || button.index === 9) {
+        startGame();
+      }
     });
   }
 }

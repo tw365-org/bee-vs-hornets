@@ -207,6 +207,7 @@ export class GameScene extends Phaser.Scene {
   spawnHornetMinion(x, y) {
     const diff = this.difficultyManager ? this.difficultyManager.getDifficulty(this.wave) : null;
     const minion = new Hornet(this, x, y);
+    minion.isBossMinion = true;
     this.enemyGroup.add(minion, true);
     minion.spawn(x, y, diff);
   }
@@ -361,7 +362,7 @@ export class GameScene extends Phaser.Scene {
 
   // 大自然食物鏈彩蛋：召喚東方蜂鷹 (Oriental Honey Buzzard) 救援
   summonHoneyBuzzard() {
-    this.buzzardCooldown = 45000; // 45 秒冷卻，避免頻繁觸發
+    this.buzzardCooldown = GAME_CONFIG.EASTER?.COOLDOWN || 45000;
     soundManager.playEagleCall();
 
     // 螢幕上方橫幅提示自然守護者登場
@@ -388,6 +389,8 @@ export class GameScene extends Phaser.Scene {
 
     // 蜂鷹單次傷害守門集合 (防止 Tween onUpdate 逐幀扣血導致 Boss 秒殺且受 FPS 影響)
     const buzzardHitTargets = new Set();
+    const bossDmg = GAME_CONFIG.EASTER?.BOSS_DAMAGE || 250;
+    const minionDmg = GAME_CONFIG.EASTER?.MINION_DAMAGE || 150;
 
     // 蜂鷹俯衝掠食軌跡動畫
     this.tweens.add({
@@ -405,12 +408,12 @@ export class GameScene extends Phaser.Scene {
           if (enemy.active && !buzzardHitTargets.has(enemy) && Phaser.Math.Distance.Between(buzzard.x, buzzard.y, enemy.x, enemy.y) < 95) {
             buzzardHitTargets.add(enemy);
             if (enemy === this.currentBoss) {
-              enemy.takeDamage(250); // 對 Boss 造成一次性 250 點重創
+              enemy.takeDamage(bossDmg); // 對 Boss 造成配置重創傷害
               if (this.bossActive && this.currentBoss) {
                 this.hud.showBossHp(true, this.currentBoss.hp, this.currentBoss.maxHp);
               }
             } else {
-              enemy.takeDamage(150); // 秒殺普通或裝甲蜂
+              enemy.takeDamage(minionDmg); // 秒殺普通或裝甲蜂
             }
           }
         });

@@ -1,5 +1,6 @@
 import { GAME_CONFIG } from '../config.js';
 import { soundManager } from '../audio/SoundManager.js';
+import { shouldSummonMinions } from '../logic/minionCap.js';
 
 export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
@@ -82,9 +83,9 @@ export class QueenBoss extends Phaser.Physics.Arcade.Sprite {
         });
       }
     } else {
-      // 招式 3: 召喚兩隻工蜂護衛（精確統計工蜂護衛數量，上限 6 隻，避免敵機無上限暴走累積）
-      const activeMinionsCount = this.scene.enemyGroup.getChildren().slice().filter(e => e.active && e !== this).length;
-      if (activeMinionsCount <= 4) {
+      // 招式 3: 召喚兩隻工蜂護衛（限定計算此 Boss 召喚的 isBossMinion 護衛，上限 4 隻，由 shouldSummonMinions 守護）
+      const activeBossMinions = this.scene.enemyGroup.getChildren().slice().filter(e => e.active && e.isBossMinion).length;
+      if (shouldSummonMinions(activeBossMinions, 4)) {
         this.scene.spawnHornetMinion(this.x - 40, this.y);
         this.scene.spawnHornetMinion(this.x + 40, this.y);
       }

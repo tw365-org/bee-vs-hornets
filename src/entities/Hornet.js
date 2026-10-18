@@ -6,7 +6,7 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, 'hornet_normal');
     this.hp = GAME_CONFIG.ENEMIES.HORNET.hp;
     this.scoreValue = GAME_CONFIG.ENEMIES.HORNET.score;
-    this.state = 'FLYING'; // 'FLYING', 'DIVING', 'FLIP_ATTACK'
+    this.state = 'FLYING'; // 'FLYING', 'DIVING', 'FLIP_ATTACK', 'ENTERING'
     this.diveTimer = 0;
     this.initialX = x;
     this.initialY = y;
@@ -77,12 +77,9 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
         }
       }
 
-      // 俯衝超出版面則由頂端重新歸隊
+      // 俯衝超出版面則平滑重返陣形 (ENTERING 狀態)
       if (this.y > 660) {
-        this.y = -20;
-        this.x = this.initialX;
-        this.setVelocity(0, 80 * this.speedMultiplier);
-        this.rotation = 0;
+        this.startEntering();
       } else if (this.y < this.initialY && this.body.velocity.y > 0) {
         // 回到初始高度
         this.state = 'FLYING';
@@ -96,14 +93,37 @@ export class Hornet extends Phaser.Physics.Arcade.Sprite {
       this.flipAttackTimer -= delta;
 
       if (this.flipAttackTimer <= 0 || this.y < -30) {
-        // 衝刺結束，重新在頂部重整歸隊
-        this.state = 'DIVING';
-        this.y = -20;
-        this.x = this.initialX;
-        this.setVelocity(0, 80 * this.speedMultiplier);
-        this.rotation = 0;
+        // 衝刺結束，由頂部平滑重返陣形
+        this.startEntering();
       }
+    } else if (this.state === 'ENTERING') {
+      // 進場中由 Tween 控制平滑過渡，不接受任何射擊或回馬槍判定
     }
+  }
+
+  /**
+   * 平滑進場歸隊 (T4 消除瞬移)
+   * 從 y = -20 以平滑 easeOut 飛入陣形位置
+   */
+  startEntering() {
+    this.state = 'ENTERING';
+    this.hasTurnedAround = false;
+    this.setVelocity(0, 0);
+    this.rotation = 0;
+    this.x = this.initialX;
+    this.y = -25;
+
+    this.scene.tweens.add({
+      targets: this,
+      y: this.initialY,
+      duration: 650,
+      ease: 'Quad.easeOut',
+      onComplete: () => {
+        if (!this.active) return;
+        this.state = 'FLYING';
+        this.diveTimer = Phaser.Math.Between(2500, 6000);
+      }
+    });
   }
 
   startDive() {
